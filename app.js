@@ -1,71 +1,57 @@
-var express = require('express')
-  , passport = require('passport')
-  , util = require('util')
-  , TwitterStrategy = require('passport-twitter').Strategy;
+var express = require('express');
 
-var TWITTER_CONSUMER_KEY = "N3E6QNaRrO8B0MYY9rRTGQ";
-var TWITTER_CONSUMER_SECRET = "8zt7MUo9gkjo2CpOn8x66bKtG0B79aZOt0O8RKrrhv0";
+var passport = require('./modules/passport.js');
 
+var util = require('util');
 
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to
-//   serialize users into and deserialize users out of the session.  Typically,
-//   this will be as simple as storing the user ID when serializing, and finding
-//   the user by ID when deserializing.  However, since this example does not
-//   have a database of user records, the complete Twitter profile is serialized
-//   and deserialized.
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
+var cookieParser = require('cookie-parser')
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var methodOverride = require('method-override');
+var session = require('express-session');
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var errorHandler = require('errorhandler');
+var path = require('path');
 
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
-});
-
-
-// Use the TwitterStrategy within Passport.
-//   Strategies in passport require a `verify` function, which accept
-//   credentials (in this case, a token, tokenSecret, and Twitter profile), and
-//   invoke a callback with a user object.
-passport.use(new TwitterStrategy({
-    consumerKey: TWITTER_CONSUMER_KEY,
-    consumerSecret: TWITTER_CONSUMER_SECRET,
-    callbackURL: "http://192.168.59.103:3000/auth/twitter/callback"
-  },
-  function(token, tokenSecret, profile, done) {
-    // asynchronous verification, for effect...
-    process.nextTick(function () {
-      
-      // To keep the example simple, the user's Twitter profile is returned to
-      // represent the logged-in user.  In a typical application, you would want
-      // to associate the Twitter account with a user record in your database,
-      // and return that user instead.
-      return done(null, profile);
-    });
-  }
-));
-
-
-
-
-var app = express.createServer();
+var app = express();
 
 // configure Express
-app.configure(function() {
-  app.set('views', __dirname + '/views');
+var env = process.env.NODE_ENV || 'development';
+
+if ('development' == env) {
+
+  app.set('port', process.env.PORT || 3000);
+  app.set('views', path.join(__dirname, 'views'));
+  //app.set('view engine', 'jade');
   app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
+
+  app.use(favicon(__dirname + '/public/favicon.ico'));
+
+  app.use(methodOverride());
+  app.use(session({ resave: true, saveUninitialized: true, secret: 'uwotm8' }));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(multer());
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  app.use(cookieParser());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(multer());
+
+/*
+  app.use(session({
+    keys: ['key1', 'key2']
+  }))
+*/
   // Initialize Passport!  Also use passport.session() middleware, to support
   // persistent login sessions (recommended).
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(app.router);
+
   app.use(express.static(__dirname + '/public'));
-});
+}
 
 
 app.get('/', function(req, res){
@@ -108,7 +94,6 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-app.listen(3000);
 
 
 // Simple route middleware to ensure user is authenticated.
@@ -120,3 +105,5 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
 }
+
+module.exports = app;
