@@ -1,10 +1,10 @@
 var express = require('express');
-var passport = require('passport');
+
+var passport = require('./modules/passport.js');
+
 var util = require('util');
-var TwitterStrategy = require('passport-twitter').Strategy;
 
 var cookieParser = require('cookie-parser')
-
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var methodOverride = require('method-override');
@@ -13,51 +13,6 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var errorHandler = require('errorhandler');
 var path = require('path');
-
-var TWITTER_CONSUMER_KEY = "N3E6QNaRrO8B0MYY9rRTGQ";
-var TWITTER_CONSUMER_SECRET = "8zt7MUo9gkjo2CpOn8x66bKtG0B79aZOt0O8RKrrhv0";
-
-
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to
-//   serialize users into and deserialize users out of the session.  Typically,
-//   this will be as simple as storing the user ID when serializing, and finding
-//   the user by ID when deserializing.  However, since this example does not
-//   have a database of user records, the complete Twitter profile is serialized
-//   and deserialized.
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
-});
-
-
-// Use the TwitterStrategy within Passport.
-//   Strategies in passport require a `verify` function, which accept
-//   credentials (in this case, a token, tokenSecret, and Twitter profile), and
-//   invoke a callback with a user object.
-passport.use(new TwitterStrategy({
-    consumerKey: TWITTER_CONSUMER_KEY,
-    consumerSecret: TWITTER_CONSUMER_SECRET,
-    callbackURL: "http://192.168.59.103:3000/auth/twitter/callback"
-  },
-  function(token, tokenSecret, profile, done) {
-    // asynchronous verification, for effect...
-    process.nextTick(function () {
-      
-      // To keep the example simple, the user's Twitter profile is returned to
-      // represent the logged-in user.  In a typical application, you would want
-      // to associate the Twitter account with a user record in your database,
-      // and return that user instead.
-      return done(null, profile);
-    });
-  }
-));
-
-
-
 
 var app = express();
 
