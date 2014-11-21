@@ -1,7 +1,18 @@
-var express = require('express')
-  , passport = require('passport')
-  , util = require('util')
-  , TwitterStrategy = require('passport-twitter').Strategy;
+var express = require('express');
+var passport = require('passport');
+var util = require('util');
+var TwitterStrategy = require('passport-twitter').Strategy;
+
+var cookieParser = require('cookie-parser')
+
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var methodOverride = require('method-override');
+var session = require('express-session');
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var errorHandler = require('errorhandler');
+var path = require('path');
 
 var TWITTER_CONSUMER_KEY = "N3E6QNaRrO8B0MYY9rRTGQ";
 var TWITTER_CONSUMER_SECRET = "8zt7MUo9gkjo2CpOn8x66bKtG0B79aZOt0O8RKrrhv0";
@@ -48,24 +59,44 @@ passport.use(new TwitterStrategy({
 
 
 
-var app = express.createServer();
+var app = express();
 
 // configure Express
-app.configure(function() {
-  app.set('views', __dirname + '/views');
+var env = process.env.NODE_ENV || 'development';
+
+if ('development' == env) {
+
+  app.set('port', process.env.PORT || 3000);
+  app.set('views', path.join(__dirname, 'views'));
+  //app.set('view engine', 'jade');
   app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
+
+  app.use(favicon(__dirname + '/public/favicon.ico'));
+
+  app.use(methodOverride());
+  app.use(session({ resave: true, saveUninitialized: true, secret: 'uwotm8' }));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(multer());
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  app.use(cookieParser());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(multer());
+
+/*
+  app.use(session({
+    keys: ['key1', 'key2']
+  }))
+*/
   // Initialize Passport!  Also use passport.session() middleware, to support
   // persistent login sessions (recommended).
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(app.router);
+
   app.use(express.static(__dirname + '/public'));
-});
+}
 
 
 app.get('/', function(req, res){
@@ -108,7 +139,7 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-app.listen(3000);
+//app.listen(3000);
 
 
 // Simple route middleware to ensure user is authenticated.
@@ -120,3 +151,5 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
 }
+
+module.exports = app;
