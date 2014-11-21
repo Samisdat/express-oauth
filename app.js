@@ -22,6 +22,8 @@ var env = process.env.NODE_ENV || 'development';
 if ('development' == env) {
 
   app.set('port', process.env.PORT || 3000);
+}
+  
   app.set('views', path.join(__dirname, 'views'));
   //app.set('view engine', 'jade');
   app.set('view engine', 'ejs');
@@ -40,18 +42,10 @@ if ('development' == env) {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(multer());
 
-/*
-  app.use(session({
-    keys: ['key1', 'key2']
-  }))
-*/
-  // Initialize Passport!  Also use passport.session() middleware, to support
-  // persistent login sessions (recommended).
   app.use(passport.initialize());
   app.use(passport.session());
 
   app.use(express.static(__dirname + '/public'));
-}
 
 
 app.get('/', function(req, res){

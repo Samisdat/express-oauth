@@ -44,8 +44,6 @@ passport.use(new TwitterStrategy({
   }
 ));
 
-console.log(passport)
-
 module.exports = passport;
 
 
